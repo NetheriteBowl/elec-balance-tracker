@@ -1,0 +1,64 @@
+name: 每日电费自动查询与图表部署
+
+on:
+  schedule:
+    - cron: '30 22 * * *'   # UTC 22:30 → 北京时间次日 6:30
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  fetch_and_deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: 运行主脚本
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          ELEC_ACCOUNT: ${{ secrets.ELEC_ACCOUNT }}
+          ELEC_ROOM_ID: ${{ secrets.ELEC_ROOM_ID }}
+          ELEC_ROOM_NAME: ${{ secrets.ELEC_ROOM_NAME }}
+          ELEC_FLOOR: ${{ secrets.ELEC_FLOOR }}
+          ELEC_AREA: ${{ secrets.ELEC_AREA }}
+          ELEC_BUILDING: ${{ secrets.ELEC_BUILDING }}
+          ELEC_AID: ${{ secrets.ELEC_AID }}
+          VPN_BASE: ${{ secrets.VPN_BASE }}
+          ELEC_HOST: ${{ secrets.ELEC_HOST }}
+          SSO_HOST: ${{ secrets.SSO_HOST }}
+          CAS_HOST: ${{ secrets.CAS_HOST }}
+          SSO_PORT: ${{ secrets.SSO_PORT }}
+          CAS_PORT: ${{ secrets.CAS_PORT }}
+          ELEC_PORT: ${{ secrets.ELEC_PORT }}
+        run: python main.py
+
+      - name: 生成图表
+        run: python plot.py
+
+      - name: 上传静态文件到 Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
