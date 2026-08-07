@@ -26,13 +26,6 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 容器自带 Playwright 和 Chromium，无需额外安装！
-      # 但如果你需要验证，可以打印版本信息（可选，调试用）
-      - name: 验证 Playwright 环境
-        run: |
-          python -c "import playwright; print(f'Playwright version: {playwright.__version__}')"
-          playwright --version
-
       - name: 运行主脚本（获取电费数据）
         env:
           USERNAME: ${{ secrets.USERNAME }}
