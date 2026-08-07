@@ -12,25 +12,26 @@ permissions:
 
 jobs:
   fetch_and_deploy:
-    runs-on: ubuntu-22.04
-
+    # 使用 Playwright 官方 Python 容器（内含 Python 3.10 + Playwright + 浏览器）
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.48.0-noble
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 设置 Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: 安装依赖
+      # 容器自带 Python 3.10，无需 setup-python，只需安装 pip 依赖
+      - name: 安装 Python 依赖
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 安装 Playwright
-        uses: microsoft/playwright-github-action@v1
-        with:
-          browsers: chromium
+      # 容器自带 Playwright 和 Chromium，无需额外安装！
+      # 但如果你需要验证，可以打印版本信息（可选，调试用）
+      - name: 验证 Playwright 环境
+        run: |
+          python -c "import playwright; print(f'Playwright version: {playwright.__version__}')"
+          playwright --version
 
       - name: 运行主脚本（获取电费数据）
         env:
