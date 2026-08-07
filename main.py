@@ -32,6 +32,7 @@ VPN_BASE = os.environ["VPN_BASE"]
 ELEC_HOST = os.environ["ELEC_HOST"]
 SSO_HOST = os.environ["SSO_HOST"]
 CAS_HOST = os.environ["CAS_HOST"]
+VPN_COOKIE_NAME = os.environ["VPN_COOKIE_NAME"]
 
 SSO_PORT = int(os.environ.get("SSO_PORT", "7280"))
 CAS_PORT = int(os.environ.get("CAS_PORT", "8080"))
@@ -67,7 +68,7 @@ def get_vpn_cookie():
         page.click("#index_login_btn")
         try:
             page.wait_for_function(
-                "() => document.cookie.includes('wengine_vpn_ticketwvpn_qust_edu_cn')",
+                "() => document.cookie.includes(f'{VPN_COOKIE_NAME}')",
                 timeout=15000
             )
         except:
@@ -75,7 +76,7 @@ def get_vpn_cookie():
         cookies = context.cookies()
         browser.close()
         for cookie in cookies:
-            if cookie['name'] == 'wengine_vpn_ticketwvpn_qust_edu_cn':
+            if cookie['name'] == f"{VPN_COOKIE_NAME}":
                 return cookie['value']
         raise RuntimeError("获取 VPN Cookie 失败")
 
@@ -183,7 +184,7 @@ def save_to_csv(balance: float):
 def fetch_elec_data():
     vpn_cookie = get_vpn_cookie()
     session = requests.Session()
-    session.cookies.set('wengine_vpn_ticketwvpn_qust_edu_cn', vpn_cookie, domain=VPN_BASE)
+    session.cookies.set(f"{VPN_COOKIE_NAME}", vpn_cookie, domain=VPN_BASE)
     ssoticketid = get_ssoticketid(session)
     sso_login(session, ssoticketid)
     ticket = get_elec_ticket(session)

@@ -3,19 +3,16 @@ name: 每日电费自动查询与图表部署
 on:
   schedule:
     - cron: '30 22 * * *'   # UTC 22:30 → 北京时间次日 6:30
-  workflow_dispatch:
+  workflow_dispatch:         # 手动触发
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write            # 允许推送代码（如需提交CSV）
+  pages: write               # 允许部署到 Pages
+  id-token: write            # 用于 Pages 部署认证
 
 jobs:
   fetch_and_deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: 检出代码
@@ -31,7 +28,7 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
-      - name: 运行主脚本
+      - name: 运行主脚本（获取电费数据）
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
@@ -45,10 +42,9 @@ jobs:
           VPN_BASE: ${{ secrets.VPN_BASE }}
           ELEC_HOST: ${{ secrets.ELEC_HOST }}
           SSO_HOST: ${{ secrets.SSO_HOST }}
-          CAS_HOST: ${{ secrets.CAS_HOST }}
           SSO_PORT: ${{ secrets.SSO_PORT }}
+          CAS_HOST: ${{ secrets.CAS_HOST }}
           CAS_PORT: ${{ secrets.CAS_PORT }}
-          ELEC_PORT: ${{ secrets.ELEC_PORT }}
         run: python main.py
 
       - name: 生成图表
@@ -57,7 +53,7 @@ jobs:
       - name: 上传静态文件到 Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public/
+          path: public/   # plot.py 生成的 HTML 存放目录
 
       - name: 部署到 GitHub Pages
         id: deployment

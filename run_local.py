@@ -7,7 +7,7 @@ from pathlib import Path
 def load_env():
     env_file = Path(__file__).parent / ".env"
     if not env_file.exists():
-        print("⚠️ 未找到 .env 文件，请参考 .env.example 创建")
+        print("未找到 .env 文件，请参考 .env.example 创建")
         sys.exit(1)
     with open(env_file, 'r', encoding='utf-8') as f:
         for line in f:
