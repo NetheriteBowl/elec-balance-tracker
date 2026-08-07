@@ -26,7 +26,14 @@ jobs:
       - name: 安装依赖
         run: |
           pip install -r requirements.txt
-          playwright install --with-deps chromium
+      - name: 安装 Playwright 依赖（容错新版 Ubuntu）
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2t64 || sudo apt-get install -y libasound2 || true
+          npx playwright install-deps
+
+      - name: 安装 Chromium 浏览器
+        run: npx playwright install chromium
 
       - name: 运行主脚本（获取电费数据）
         env:
