@@ -26,7 +26,11 @@ jobs:
       - name: 安装依赖
         run: |
           pip install -r requirements.txt
-          python -m playwright install --with-deps chromium
+
+      - name: 安装 Playwright
+        uses: microsoft/playwright-github-action@v1
+        with:
+          browsers: chromium
 
       - name: 运行主脚本（获取电费数据）
         env:
