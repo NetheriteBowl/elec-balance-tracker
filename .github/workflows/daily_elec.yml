@@ -42,9 +42,11 @@ jobs:
           VPN_BASE: ${{ secrets.VPN_BASE }}
           ELEC_HOST: ${{ secrets.ELEC_HOST }}
           SSO_HOST: ${{ secrets.SSO_HOST }}
-          SSO_PORT: ${{ secrets.SSO_PORT }}
+          SSO_PORT: 7280
           CAS_HOST: ${{ secrets.CAS_HOST }}
-          CAS_PORT: ${{ secrets.CAS_PORT }}
+          CAS_PORT: 8080
+          ELEC_PORT: 80
+          VPN_COOKIE_NAME: ${{ VPN_COOKIE_NAME }}
         run: python main.py
 
       - name: 生成图表
