@@ -52,13 +52,14 @@ jobs:
       - name: 生成图表
         run: python plot.py
 
-      - name: 提交 CSV 到仓库
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git add data/*.csv
-          git commit -m "chore: 自动更新电费数据 [skip ci]" || echo "无变更需要提交"
-          git push
+      - name: 提交 CSV 数据到仓库
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: 自动更新电费数据 [skip ci]"
+          file_pattern: "data/*.csv"
+          commit_user_name: "GitHub Actions Bot"
+          commit_user_email: "actions@github.com"
+          commit_author: "GitHub Actions Bot <actions@github.com>"
           
       - name: 上传静态文件到 Pages Artifact
         uses: actions/upload-pages-artifact@v3
