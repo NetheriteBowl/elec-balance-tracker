@@ -51,6 +51,9 @@ jobs:
 
       - name: 生成图表
         run: python plot.py
+      
+      - name: 配置 Git 安全目录
+        run: git config --local --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: 提交 CSV 数据到仓库
         uses: stefanzweifel/git-auto-commit-action@v5
