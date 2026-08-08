@@ -14,6 +14,8 @@ jobs:
   fetch_and_deploy:
     # 使用 Playwright 官方 Python 容器（内含 Python 3.10 + Playwright + 浏览器）
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
     container:
       image: mcr.microsoft.com/playwright/python:v1.48.0-noble
     steps:
