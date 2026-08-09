@@ -6,6 +6,7 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 from Crypto.Cipher import AES
+from zoneinfo import ZoneInfo
 import urllib.parse
 
 # ============ 强制从环境变量读取 ============
@@ -155,7 +156,8 @@ def init_csv():
 
 def save_to_csv(balance: float):
     init_csv()
-    now = datetime.now()
+    BJ_tz = ZoneInfo('Asia/Shanghai')
+    now = datetime.now(BJ_tz)
     date_str = now.strftime('%Y-%m-%d')
 
     rows = []
