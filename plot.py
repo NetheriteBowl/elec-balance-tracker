@@ -119,8 +119,8 @@ fig.update_layout(
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     margin=dict(l=50, r=200, t=60, b=50),  # 顶部留空减少，给 rangeselector 更多空间
 )
-fig.update_yaxes(title_text="余额 (元)", row=1, col=1)
-fig.update_yaxes(title_text="消耗 (元)", row=2, col=1)
+fig.update_yaxes(title_text="余额 (度)", row=1, col=1)
+fig.update_yaxes(title_text="消耗 (度)", row=2, col=1)
 
 # ---------- 保存 HTML ----------
 fig.write_html(HTML_FILE)
