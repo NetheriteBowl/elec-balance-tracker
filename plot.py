@@ -38,21 +38,13 @@ stats_text = (
     + "<br>".join(f"{k}: {v:.2f}" if isinstance(v, float) else f"{k}: {v}" for k, v in stats.items())
 )
 
-# ---------- 预测（基于近期平均消耗，不受充值干扰） ----------
-recent_days = min(7, len(valid_consumption))   # 取最近7天，不足则取全部
-avg_daily_consumption = valid_consumption.tail(recent_days).mean()
-last_balance = df['balance'].iloc[-1]
-last_date = df['date'].max()
-future_dates = [last_date + timedelta(days=i+1) for i in range(7)]
-future_pred = [last_balance - avg_daily_consumption * (i+1) for i in range(7)]
-
 # ---------- 构建子图 ----------
 fig = make_subplots(
     rows=2, cols=1,
     shared_xaxes=True,
     vertical_spacing=0.08,
     row_heights=[0.7, 0.3],
-    subplot_titles=("余额趋势与预测", "每日消耗")  # 保留子图标题
+    subplot_titles=("余额趋势", "每日消耗")  # 保留子图标题
 )
 
 # 主图：实际余额
@@ -61,13 +53,7 @@ fig.add_trace(
                name='实际余额', line=dict(color='blue'), marker=dict(size=4)),
     row=1, col=1
 )
-# 主图：预测余额
-fig.add_trace(
-    go.Scatter(x=future_dates, y=future_pred, mode='lines+markers',
-               name='预测余额 (7天)', line=dict(color='red', dash='dash'),
-               marker=dict(size=6, symbol='triangle-up')),
-    row=1, col=1
-)
+
 # 下窄图：每日消耗
 fig.add_trace(
     go.Bar(x=df['date'], y=df['consumption'], name='每日消耗',
@@ -90,7 +76,7 @@ fig.add_annotation(
 )
 
 # ---------- 使用 rangeselector 切换范围 ----------
-# 只给第一行的 x 轴加 rangeselector
+# 第一行 x 轴加 rangeselector
 fig.update_xaxes(
     rangeselector=dict(
         buttons=[
@@ -106,7 +92,7 @@ fig.update_xaxes(
     row=1, col=1   # ← 限定只改第一行
 )
 
-# 第二行的 x 轴关掉 rangeselector
+# 第二行 x 轴关 rangeselector
 fig.update_xaxes(
     rangeselector=dict(visible=False),
     row=2, col=1
@@ -117,7 +103,7 @@ fig.update_layout(
     height=700,
     hovermode="x unified",
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-    margin=dict(l=50, r=200, t=60, b=50),  # 顶部留空减少，给 rangeselector 更多空间
+    margin=dict(l=50, r=200, t=60, b=50), 
 )
 fig.update_yaxes(title_text="余额 (度)", row=1, col=1)
 fig.update_yaxes(title_text="消耗 (度)", row=2, col=1)
