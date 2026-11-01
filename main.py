@@ -58,22 +58,31 @@ def build_vpn_url(protocol: str, host: str, path: str, port: int = None) -> str:
 
 # ---------- 获取 VPN Cookie ----------
 def get_vpn_cookie():
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context()
         page = context.new_page()
-        page.goto(f"https://{VPN_BASE}")
-        page.fill("#un", USERNAME)
-        page.fill("#pd", PASSWORD)
-        page.click("#index_login_btn")
+        page.goto(f"https://{VPN_BASE}", wait_until="domcontentloaded", timeout=60000)
+        account = page.get_by_placeholder("请输入学工号-账号/安全邮箱")
+        account.wait_for(state="visible", timeout=30000)
+        account.fill(USERNAME)
+        page.get_by_placeholder("请输入登录密码").fill(PASSWORD)
+        page.get_by_role("button", name="登录", exact=True).click()
+
+        # 注意：wengine_vpn_ticket cookie 在登录前就已存在（未认证的会话票据），
+        # 因此不能只判断 cookie 是否存在，必须等页面真正离开 CAS 登录页。
         try:
-            page.wait_for_function(
-                "() => document.cookie.includes(f'{VPN_COOKIE_NAME}')",
-                timeout=15000
-            )
-        except:
-            pass
+            page.wait_for_url(lambda url: "cas/login" not in url, timeout=90000)
+        except PlaywrightTimeoutError:
+            try:
+                hint = page.locator("body").inner_text(timeout=5000)[:300]
+            except Exception:
+                hint = ""
+            browser.close()
+            raise RuntimeError(f"VPN 登录失败，仍停留在登录页：{hint}")
+
         cookies = context.cookies()
         browser.close()
         for cookie in cookies:
@@ -84,7 +93,7 @@ def get_vpn_cookie():
 # ---------- SSO 认证流程 ----------
 def get_ssoticketid(session):
     url = build_vpn_url("http", SSO_HOST, "/ias/prelogin?sysid=FWDT", port=SSO_PORT)
-    resp = session.get(url, timeout=30)
+    resp = session.get(url, timeout=60)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, 'html.parser')
     tag = soup.find('input', {'id': 'ssoticketid'})
