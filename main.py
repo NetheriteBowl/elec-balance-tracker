@@ -153,7 +153,8 @@ def extract_balance(errmsg: str) -> float:
     match = re.search(r'(\d+\.?\d*)', errmsg)
     if match:
         return float(match.group(1))
-    return 0.0
+    # 不要静默返回 0.0：查询失败时写入 0 会污染历史数据
+    raise RuntimeError(f"无法从返回消息中解析余额: {errmsg!r}")
 
 # ---------- CSV 存储 ----------
 def init_csv():
@@ -201,7 +202,10 @@ def fetch_elec_data():
     ticket = get_elec_ticket(session)
     access_check_ele(session, ticket)
     result = query_elec(session, ticket)
-    errmsg = result.get('query_elec_roominfo', {}).get('errmsg', '')
+    info = result.get('query_elec_roominfo', {})
+    if str(info.get('retcode', '')) not in ('0', ''):
+        raise RuntimeError(f"电费查询失败: retcode={info.get('retcode')} errmsg={info.get('errmsg')!r}")
+    errmsg = info.get('errmsg', '')
     balance = extract_balance(errmsg)
     return balance
 
