@@ -10,6 +10,10 @@ permissions:
   pages: write               # 允许部署到 Pages
   id-token: write            # 用于 Pages 部署认证
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false  # 让排队的运行等待，而不是取消
+
 jobs:
   fetch_and_deploy:
     # 使用 Playwright 官方 Python 容器（内含 Python 3.10 + Playwright + 浏览器）
@@ -56,7 +60,7 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: 提交 CSV 数据到仓库
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: 自动更新电费数据 [skip ci]"
           file_pattern: "data/*.csv"
